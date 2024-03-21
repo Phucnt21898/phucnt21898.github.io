@@ -1,0 +1,260 @@
+[
+{
+	"uri": "//localhost:1313/vi/4-backup-restore/4.1-backup/",
+	"title": "Backup mysql database on on-premises enviroment",
+	"tags": [],
+	"description": "",
+	"content": "Run command để access vào MySQL Pod:\nkubectcl exec –it \u0026lt;mysql_pod\u0026gt; bash –n phonebook\rRun command để backup:\nmysqldump -u root -p phonebook \u0026gt; /var/lib/mysql/database_phonebook.sql\rVì thư mục /var/lib/mysql trong pod mysql được mount với thư mục /mnt/data trên server nên chúng ta có thể thấy file database_phonebook.sql trong thư mục /mnt/data trên server.\n"
+},
+{
+	"uri": "//localhost:1313/vi/1-problem/",
+	"title": "Đặt vấn đề",
+	"tags": [],
+	"description": "",
+	"content": "Một công ty XYZ đã triển khai Service của họ bằng nền tảng Kubernetes trên môi trường On-premsise. Tuy nhiên, sau một thời gian, Công ty nhận thấy nhiều vấn đề về việc vận hành, như phải tự quản lý cơ sở hạ tầng, cần đảm bảo tính sẵn sàng cao cho Control Plane, Etcd, v.v. nên mất rất nhiều thời gian và nguồn nhân lực.\nTrong bối cảnh đó, team DevOps đã nhận được yêu cầu từ Leadership về sự kiện đặc biệt của công ty, khi được dự đoán số lượng request tới Service sẽ tăng gấp 3 lần. Team DevOps đã kiểm tra rằng tài nguyên hiện tại khó đáp ứng được yêu cầu tăng gấp 3 lần trong sự kiện đặc biệt của công ty. Do đó, để giải quyết vấn đề mở rộng nhanh chóng và tiết kiệm chi phí, team DevOps phải dự đoán và đưa ra phương án dự phòng cho nhu cầu mở rộng, bao gồm mua thêm bao nhiêu server, mở rộng cơ sở hạ tầng mạng và tăng dung lượng lưu trữ..v.v. Quá trình mở rộng quy mô này có thể tốn kém và mất thời gian, chưa kể khi kết thúc sự kiện sẽ có một lượng lớn tài nguyên nhàn rỗi không được sử dụng.\nDo đó, team DevOps đã quyết định di chuyển service lên môi trường Cloud để nhận được những benefits sau:\nTính mở rộng linh hoạt: Cloud cho phép ta mở rộng quy mô tài nguyên khi cần mà không cần phải đầu tư vào phần cứng và cơ sở hạ tầng. Ta có thể dễ dàng tăng hoặc giảm số lượng server để đáp ứng khối lượng công việc. Mở rộng linh hoạt giúp tiết kiệm chi phí và tối ưu hóa việc sử dụng tài nguyên. Đơn giản hóa quản lý cơ sở hạ tầng: CLoud loại bỏ khó khăn và công việc liên quan đến việc quản lý cơ sở hạ tầng Kubernetes. AWS quản lý và duy trì toàn bộ cơ sở hạ tầng, bao gồm cài đặt, định cấu hình, thay đổi quy mô và nâng cấp các thành phần Kubernetes. Điều này giúp giảm bớt gánh nặng quản lý và giúp ta tập trung vào phát triển ứng dụng. Tích hợp dịch vụ AWS: CLoud tích hợp tốt với các dịch vụ và công cụ AWS khác. ta có thể sử dụng các dịch vụ như Amazon EC2, Amazon RDS, Amazon S3, Amazon DynamoDB..v..v để bổ sung cho ứng dụng của mình. Điều này giúp thúc đẩy các dịch vụ quản lý cơ sở dữ liệu, lưu trữ và xử lý dữ liệu, giảm thiểu công việc tích hợp và tăng độ tin cậy của hệ thống. Chi phí linh hoạt: Di chuyển từ môi trường On-premsise sang Cloud giúp ta chuyển từ mô hình trả trước (CAPEX) sang mô hình trả theo mức sử dụng (OPEX). Thay vì phải đầu tư vào phần cứng và cơ sở hạ tầng, ta chỉ trả tiền để sử dụng dịch vụ theo mô hình pay-as-you-go. Điều này giúp ta tối ưu hóa chi phí và linh hoạt trong việc phát triển và vận hành ứng dụng. Workshop này tập trung vào việc demo di chuyển một ứng dụng Micro-service Phonebook đơn giản được triển khai trên cụm Kubernetes trong môi trường On-premsise lên môi trường AWS Cloud, cũng như xây dựng kiến trúc cụm EKS bằng cách sử dụng tool Infrastrure as code là Terraform. Workshop không bao gồm CI/CD, monitoring, logging hay tích hợp các dịch vụ AWS khác như RDS, Cloudwatch, v.v.\n"
+},
+{
+	"uri": "//localhost:1313/vi/2-architecture/2.1-on-prem/",
+	"title": "Kiến trúc hiện tại của hệ thống Kubernetes trên môi trường on-premises",
+	"tags": [],
+	"description": "",
+	"content": "Content Kiến trúc cụm Kubernetes trên môi trường on-premises Kiến trúc ứng dụng được triển khai bằng Kubernetes trên môi trường on-premises "
+},
+{
+	"uri": "//localhost:1313/vi/2-architecture/2.1-on-prem/2.1.1-k8s-cluster/",
+	"title": "Kubernetes cluster architecture on On-premises environment",
+	"tags": [],
+	"description": "",
+	"content": "\nKiến trúc này đảm bảo High Availability nên có 3 Server Control Plane với một cụm external etcd gồm 3 Server, 2 Server chịu trách nhiệm cân bằng tải theo mô hình active-standby và Worker node. Vì vậy trên mô hình On-Premise chúng ta phải quản lý toàn bộ kiến trúc như trên và xử lý các sự cố xảy ra, luôn đảm bảo tính High Availability và đảm nhiệm các kịch bản backup \u0026amp; recovery cho Infra khi có sự cố xảy ra.\n"
+},
+{
+	"uri": "//localhost:1313/vi/",
+	"title": "Overall",
+	"tags": [],
+	"description": "",
+	"content": "Di chuyển service được triển khai bằng Kubernetes từ môi trường on-premises sang môi trường Cloud Overall Workshop này trình bày cách di chuyển ứng dụng Micro-service Phonebook đơn giản được triển khai bằng Kubernetes trên môi trường on-premises sang môi trường AWS Cloud, cũng như xây dựng kiến trúc cụm EKS bằng cách sử dụng tool Infrastrure as code là Terraform\nContent Đặt vấn đề Kiến trúc Di chuyển service từ môi trường on-premises sang môi trường Cloud Backup \u0026amp; restore dữ liệu ứng dụng từ môi trường on-premises lên AWS cloud Dọn dẹp tài nguyên "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.2-terraform/3.2.1-vpc-subnet/",
+	"title": "Tạo AWS VPC &amp; Subnets bằng cách sử dụng Terraform",
+	"tags": [],
+	"description": "",
+	"content": "Bước tiếp theo là tạo virtual private cloud sử dụng \u0026ldquo;aws_vpc\u0026rdquo; trong Terraform. TCó một trường bắt buộc cần cung cấp, đó là kích thước mạng.\nSau đó, tạo 2 public subnets và 2 private subnets:\n# Create VPC\rresource \u0026quot;aws_vpc\u0026quot; \u0026quot;vpc-main\u0026quot; {\rcidr_block = \u0026quot;10.10.0.0/16\u0026quot;\renable_dns_hostnames = true\renable_dns_support = true\rtags = {\rName = \u0026quot;vpc-main\u0026quot;\r}\r}\routput \u0026quot;aws_vpc\u0026quot; {\rvalue = aws_vpc.vpc-main.id\r}\r# Create Subnet\rresource \u0026quot;aws_subnet\u0026quot; \u0026quot;public-subnet-vpc-main-1\u0026quot; {\rvpc_id = aws_vpc.vpc-main.id\rcidr_block = \u0026quot;10.10.1.0/24\u0026quot;\ravailability_zone = \u0026quot;us-east-1a\u0026quot;\rmap_public_ip_on_launch = true\rtags = {\rName = \u0026quot;public-subnet-vpc-main-1\u0026quot;\r}\r}\rresource \u0026quot;aws_subnet\u0026quot; \u0026quot;public-subnet-vpc-main-2\u0026quot; {\rvpc_id = aws_vpc.vpc-main.id\rcidr_block = \u0026quot;10.10.2.0/24\u0026quot;\ravailability_zone = \u0026quot;us-east-1b\u0026quot;\rmap_public_ip_on_launch = true\rtags = {\rName = \u0026quot;public-subnet-vpc-main-2\u0026quot;\r}\r}\rresource \u0026quot;aws_subnet\u0026quot; \u0026quot;private-subnet-vpc-main-1\u0026quot; {\rvpc_id = aws_vpc.vpc-main.id\rcidr_block = \u0026quot;10.10.3.0/24\u0026quot;\ravailability_zone = \u0026quot;us-east-1a\u0026quot;\rtags = {\rName = \u0026quot;private-subnet-vpc-main-1\u0026quot;\r}\r}\rresource \u0026quot;aws_subnet\u0026quot; \u0026quot;private-subnet-vpc-main-2\u0026quot; {\rvpc_id = aws_vpc.vpc-main.id\rcidr_block = \u0026quot;10.10.4.0/24\u0026quot;\ravailability_zone = \u0026quot;us-east-1b\u0026quot;\rtags = {\rName = \u0026quot;private-subnet-vpc-main-2\u0026quot;\r}\r}\r"
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.1-setup-tools/3.1.1-create-ec2-instance/",
+	"title": "Tạo Bastion host",
+	"tags": [],
+	"description": "",
+	"content": "Step 1: Tuy cập Amazon EC2 console tại link https://console.aws.amazon.com/ec2/ -\u0026gt; Chọn Launch Instance.\nStep 2: Cấu hình EC2 Instance:\nName and tags: Bastion host, chọn AMI: EC2 Instance type: t2.small Cấu hình Network: Trong đó: Security Group gắn vào bastion cho phép các rule cần thiết để Instance Connect service có thể truy cập vào bastion\nStep 3: Chọn Review and Launch, sau đó chọn Launch\n"
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.1-setup-tools/",
+	"title": "Tạo Bastion Host và cài đặt các công cụ cần thiết",
+	"tags": [],
+	"description": "",
+	"content": "Content Tạo Bastion host Tạo access key \u0026amp; secret key Setup Instance Connect để truy cập vào Bastion host thông qua giao thức ssh Cài đặt awscli tool Cài đặt eksctl tool Cài đặt kubectl tool Cài đặt Terraform tool "
+},
+{
+	"uri": "//localhost:1313/vi/2-architecture/",
+	"title": "Kiến trúc ",
+	"tags": [],
+	"description": "",
+	"content": "Content Kiến trúc hiện tại của hệ thống Kubernetes trên môi trường on-premises Kiến trúc hệ thống khi được triển khai vào cụm AWS EKS "
+},
+{
+	"uri": "//localhost:1313/vi/2-architecture/2.2-cloud/",
+	"title": "Kiến trúc hệ thống khi được triển khai vào cụm AWS EKS",
+	"tags": [],
+	"description": "",
+	"content": "\nĐây là Cơ sở hạ tầng trên môi trường AWS Cloud khi được di chuyển từ On-premises. Trên môi trường AWS Cloud, AWS chịu trách nhiệm quản lý Control Plane thay vì chúng ta phải tự quản lý Control Plane, đảm bảo tính high availability và các tình huống sao lưu \u0026amp; khôi phục khi xảy ra sự cố trên môi trường On-premises. Giảm gánh nặng quản lý cơ sở hạ tầng và giúp chúng ta tập trung vào phát triển ứng dụng.\nTrên môi trường AWS Cloud, người dùng sẽ truy cập Phonebook service bằng domain được phân giải bằng AWS Route53. Sau đó, requests sẽ đi đến Bộ cân bằng tải AWS được quản lý bởi AWS ALB Ingress Controller thay vì đi qua Ingress Controller Nginx trên môi trường On-premises, khi đó requests sẽ đi thẳng đến các Pod được triển khai trên worker node Team DevOps sẽ quản lý cụm AWS EKS bằng cách thực hiện các hành động trên server Bastion. Team DevOps sẽ truy cập server Bastion thông qua AWS Instance Connect\nChúng ta sẽ tiến hành di chuyển service từ môi trường On-premises sang môi trường AWS Cloud theo các bước sau:\nĐầu tiên, chúng ta sẽ tạo server Bastion và cài đặt các công cụ cần thiết để thực hiện apply code Terraform và quản lý cụm AWS EKS.\nTiếp theo, chúng ta sẽ xây dựng Cơ sở hạ tầng trên môi trường AWS Cloud (Sử dụng tool Infrastructure as code là Terraform)\nTiếp theo chúng ta sẽ triển khai kiến trúc của Phonebook App sử dụng nền tảng Kubernetes trên cluster EKS tương tự như kiến trúc của Phonebook App trên môi trường On-premises (Lúc này các service của công ty đã được triển khai lên cluster EKS, nhưng chưa có dữ liệu)\nCuối cùng, chúng ta sẽ triển khai sao lưu và khôi phục dữ liệu Ứng dụng trên môi trường On-premises vào cụm EKS\n"
+},
+{
+	"uri": "//localhost:1313/vi/2-architecture/2.1-on-prem/2.1.2-k8s-app/",
+	"title": "Kiến trúc ứng dụng được triển khai bằng Kubernetes trên môi trường on-premises",
+	"tags": [],
+	"description": "",
+	"content": "\nKiến trúc ứng dụng danh bạ bao gồm 3 module (dịch vụ decouple):\nModule database: Lưu trữ dữ liệu trong cơ sở dữ liệu MySQL, được triển khai bằng StatefulSet, dữ liệu được lưu trữ trong static volume Module web-service: Chịu trách nhiệm triển khai các API Phonebook add/update/delete tương tác với module Cơ sở dữ liệu, được triển khai bằng cách sử dụng Deployment và tự động mở rộng quy mô bằng HPA (Horizontal Pod Autoscaling) Module result-service: Chịu trách nhiệm triển khai API search Phonebook để tương tác với module Dataabse, tương tự như module web-service Người dùng truy cập thông qua domain, Nginx Ingress Controller có trách nhiệm điều hướng các request theo các rule Ingress, các request sẽ được chuyển hướng đến Serivce và từ Service được chuyển hướng đến Pod.\n"
+},
+{
+	"uri": "//localhost:1313/vi/4-backup-restore/4.2-push/",
+	"title": "Push mysql backup file từ on-premises lên AWS cloud sử dụng awscli",
+	"tags": [],
+	"description": "",
+	"content": "Để có thể push các object vào S3 bucket, chúng ta cần cài đặt awscli và cần configure các thông tin xác thực confiure (Tham khảo 3.1.4)\nChúng ta đã upload thành công, tiếp theo chúng ta sẽ khôi phục dữ liệu trên môi trường AWS Cloud\n"
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.1-setup-tools/3.1.2-create-access-secret-key/",
+	"title": "Tạo access key &amp; secret key",
+	"tags": [],
+	"description": "",
+	"content": "Step 1: Truy cập vào AWS management console, click vào Profile name, và sau đó click vào Security Credentials Step 2: Đi đến Access Keys và chọn Create New Access Key. Step 3: Click vào Show Access Key và save/download the access key và secret access key. "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.2-terraform/3.2.2-igw/",
+	"title": "Tạo AWS Internet Gateway bằng cách sử dụng Terraform",
+	"tags": [],
+	"description": "",
+	"content": "Để cung cấp truy cập internet cho các service. Cần internet gateway trong VPC, Nó sẽ được sử dụng làm tuyến mặc định trong các public subnet\nresource \u0026quot;aws_internet_gateway\u0026quot; \u0026quot;internet-gateway-vpc-main\u0026quot; {\rvpc_id = aws_vpc.vpc-main.id\rtags = {\rName = \u0026quot;internet-gateway-vpc-main\u0026quot;\r}\r}\r"
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.2-terraform/3.2.6-oidc/",
+	"title": "Tạo kết nối đến máy chủ EC2 Private",
+	"tags": [],
+	"description": "",
+	"content": "Đối với Windows instance nằm trong private subnet, không có public IP, không có internet gateway nên không thể đi ra ngoài internet.\nVới loại instance này, cách làm truyền thống là ta sẽ sử dụng kỹ thuật Bastion host tốn nhiều chi phí và công sức, nhưng ở đây chúng ta sẽ sử dụng Session Manager với loại này.\nCơ bản là private instance vẫn phải mở cổng TCP 443 tới System Manager, nhưng không cho kết nối đó đi ra ngoài internet mà chỉ cho đi trong chính VPC của mình, nên đảm bảo được vấn đề bảo mật.\nĐể làm được điều đó, ta phải đưa endpoint của System Manager vào trong VPC, nghĩa là sử dụng VPC interface endpoint:\nVPC interface endpoint được gắn với subnet nên cách làm này không những với private subnet mà còn có thể làm với public subnet, nghĩa là với public subnet, bạn hoàn toàn có thể không cho TCP 443 đi ra ngoài internet.\nNội dung: Kích hoạt DNS hostnames Tạo VPC Endpoint Kết nối Private Instance "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.2-terraform/3.2.7-access-eks-cluster/",
+	"title": "Tạo kết nối đến máy chủ EC2 Private",
+	"tags": [],
+	"description": "",
+	"content": "Đối với Windows instance nằm trong private subnet, không có public IP, không có internet gateway nên không thể đi ra ngoài internet.\nVới loại instance này, cách làm truyền thống là ta sẽ sử dụng kỹ thuật Bastion host tốn nhiều chi phí và công sức, nhưng ở đây chúng ta sẽ sử dụng Session Manager với loại này.\nCơ bản là private instance vẫn phải mở cổng TCP 443 tới System Manager, nhưng không cho kết nối đó đi ra ngoài internet mà chỉ cho đi trong chính VPC của mình, nên đảm bảo được vấn đề bảo mật.\nĐể làm được điều đó, ta phải đưa endpoint của System Manager vào trong VPC, nghĩa là sử dụng VPC interface endpoint:\nVPC interface endpoint được gắn với subnet nên cách làm này không những với private subnet mà còn có thể làm với public subnet, nghĩa là với public subnet, bạn hoàn toàn có thể không cho TCP 443 đi ra ngoài internet.\nNội dung: Kích hoạt DNS hostnames Tạo VPC Endpoint Kết nối Private Instance "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.3-k8s-app/3.3.1-alb-ingress-controller/",
+	"title": "Tạo kết nối đến máy chủ EC2 Private",
+	"tags": [],
+	"description": "",
+	"content": "Đối với Windows instance nằm trong private subnet, không có public IP, không có internet gateway nên không thể đi ra ngoài internet.\nVới loại instance này, cách làm truyền thống là ta sẽ sử dụng kỹ thuật Bastion host tốn nhiều chi phí và công sức, nhưng ở đây chúng ta sẽ sử dụng Session Manager với loại này.\nCơ bản là private instance vẫn phải mở cổng TCP 443 tới System Manager, nhưng không cho kết nối đó đi ra ngoài internet mà chỉ cho đi trong chính VPC của mình, nên đảm bảo được vấn đề bảo mật.\nĐể làm được điều đó, ta phải đưa endpoint của System Manager vào trong VPC, nghĩa là sử dụng VPC interface endpoint:\nVPC interface endpoint được gắn với subnet nên cách làm này không những với private subnet mà còn có thể làm với public subnet, nghĩa là với public subnet, bạn hoàn toàn có thể không cho TCP 443 đi ra ngoài internet.\nNội dung: Kích hoạt DNS hostnames Tạo VPC Endpoint Kết nối Private Instance "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.3-k8s-app/3.3.2-alb-ingress-manifest/",
+	"title": "Tạo kết nối đến máy chủ EC2 Private",
+	"tags": [],
+	"description": "",
+	"content": "Đối với Windows instance nằm trong private subnet, không có public IP, không có internet gateway nên không thể đi ra ngoài internet.\nVới loại instance này, cách làm truyền thống là ta sẽ sử dụng kỹ thuật Bastion host tốn nhiều chi phí và công sức, nhưng ở đây chúng ta sẽ sử dụng Session Manager với loại này.\nCơ bản là private instance vẫn phải mở cổng TCP 443 tới System Manager, nhưng không cho kết nối đó đi ra ngoài internet mà chỉ cho đi trong chính VPC của mình, nên đảm bảo được vấn đề bảo mật.\nĐể làm được điều đó, ta phải đưa endpoint của System Manager vào trong VPC, nghĩa là sử dụng VPC interface endpoint:\nVPC interface endpoint được gắn với subnet nên cách làm này không những với private subnet mà còn có thể làm với public subnet, nghĩa là với public subnet, bạn hoàn toàn có thể không cho TCP 443 đi ra ngoài internet.\nNội dung: Kích hoạt DNS hostnames Tạo VPC Endpoint Kết nối Private Instance "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.3-k8s-app/3.3.3-web/",
+	"title": "Tạo kết nối đến máy chủ EC2 Private",
+	"tags": [],
+	"description": "",
+	"content": "Đối với Windows instance nằm trong private subnet, không có public IP, không có internet gateway nên không thể đi ra ngoài internet.\nVới loại instance này, cách làm truyền thống là ta sẽ sử dụng kỹ thuật Bastion host tốn nhiều chi phí và công sức, nhưng ở đây chúng ta sẽ sử dụng Session Manager với loại này.\nCơ bản là private instance vẫn phải mở cổng TCP 443 tới System Manager, nhưng không cho kết nối đó đi ra ngoài internet mà chỉ cho đi trong chính VPC của mình, nên đảm bảo được vấn đề bảo mật.\nĐể làm được điều đó, ta phải đưa endpoint của System Manager vào trong VPC, nghĩa là sử dụng VPC interface endpoint:\nVPC interface endpoint được gắn với subnet nên cách làm này không những với private subnet mà còn có thể làm với public subnet, nghĩa là với public subnet, bạn hoàn toàn có thể không cho TCP 443 đi ra ngoài internet.\nNội dung: Kích hoạt DNS hostnames Tạo VPC Endpoint Kết nối Private Instance "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.3-k8s-app/3.3.4-result/",
+	"title": "Tạo kết nối đến máy chủ EC2 Private",
+	"tags": [],
+	"description": "",
+	"content": "Đối với Windows instance nằm trong private subnet, không có public IP, không có internet gateway nên không thể đi ra ngoài internet.\nVới loại instance này, cách làm truyền thống là ta sẽ sử dụng kỹ thuật Bastion host tốn nhiều chi phí và công sức, nhưng ở đây chúng ta sẽ sử dụng Session Manager với loại này.\nCơ bản là private instance vẫn phải mở cổng TCP 443 tới System Manager, nhưng không cho kết nối đó đi ra ngoài internet mà chỉ cho đi trong chính VPC của mình, nên đảm bảo được vấn đề bảo mật.\nĐể làm được điều đó, ta phải đưa endpoint của System Manager vào trong VPC, nghĩa là sử dụng VPC interface endpoint:\nVPC interface endpoint được gắn với subnet nên cách làm này không những với private subnet mà còn có thể làm với public subnet, nghĩa là với public subnet, bạn hoàn toàn có thể không cho TCP 443 đi ra ngoài internet.\nNội dung: Kích hoạt DNS hostnames Tạo VPC Endpoint Kết nối Private Instance "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.3-k8s-app/3.3.5-mysql/",
+	"title": "Tạo kết nối đến máy chủ EC2 Private",
+	"tags": [],
+	"description": "",
+	"content": "Đối với Windows instance nằm trong private subnet, không có public IP, không có internet gateway nên không thể đi ra ngoài internet.\nVới loại instance này, cách làm truyền thống là ta sẽ sử dụng kỹ thuật Bastion host tốn nhiều chi phí và công sức, nhưng ở đây chúng ta sẽ sử dụng Session Manager với loại này.\nCơ bản là private instance vẫn phải mở cổng TCP 443 tới System Manager, nhưng không cho kết nối đó đi ra ngoài internet mà chỉ cho đi trong chính VPC của mình, nên đảm bảo được vấn đề bảo mật.\nĐể làm được điều đó, ta phải đưa endpoint của System Manager vào trong VPC, nghĩa là sử dụng VPC interface endpoint:\nVPC interface endpoint được gắn với subnet nên cách làm này không những với private subnet mà còn có thể làm với public subnet, nghĩa là với public subnet, bạn hoàn toàn có thể không cho TCP 443 đi ra ngoài internet.\nNội dung: Kích hoạt DNS hostnames Tạo VPC Endpoint Kết nối Private Instance "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.2-terraform/",
+	"title": "Xây dựng cơ sở hạ tầng trên AWS Cloud bằng Terraform",
+	"tags": [],
+	"description": "",
+	"content": "Bắt đầu với Terraform. Đầu tiên, chúng ta cần tạo provider AWS. Nó cho phép tương tác với nhiều tài nguyên được AWS hỗ trợ, chẳng hạn như VPC, EC2, EKS và nhiều tài nguyên khác. Cần phải định cấu hình nhà cung cấp với thông tin xác thực phù hợp trước khi sử dụng.\nTrong trường hợp này, tôi sử dụng Access Key \u0026amp; Secret Key để định cấu hình thông tin xác thực cho Terraform\nprovider \u0026quot;aws\u0026quot; { region = \u0026quot;us-east-1\u0026quot; }\rterraform {\rrequired_providers {\raws = {\rsource = \u0026quot;hashicorp/aws\u0026quot;\rversion = \u0026quot;~\u0026gt; 3.0\u0026quot;\r}\r}\r}\rContent: Tạo AWS VPC \u0026amp; Subnets bằng cách sử dụng Terraform Tạo AWS Internet Gateway bằng cách sử dụng Terraform Tạo AWS NAT Gateway bằng cách sử dụng Terraform Tạo AWS Route Table bằng cách sử dụng Terraform Tạo AWS EKS cluster bằng cách sử dụng Terraform Tạo IAM OIDC provider EKS bằng cách sử dụng Terraform Truy cập vào cụm EKS "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/",
+	"title": "Di chuyển service từ môi trường on-premises sang môi trường Cloud",
+	"tags": [],
+	"description": "",
+	"content": "Content 3.1. Tạo Bastion Host và cài đặt các công cụ cần thiết 3.2. Xây dựng cơ sở hạ tầng trên AWS Cloud bằng Terraform 3.3. Triển khai kiến trúc ứng dụng Phonebook sử dụng nền tảng Kubernetes trên cụm AWS EKS trên AWS Cloud\n"
+},
+{
+	"uri": "//localhost:1313/vi/4-backup-restore/4.3-restore/",
+	"title": "Restore dữ liệu mysql trên môi trường AWS cloud",
+	"tags": [],
+	"description": "",
+	"content": "Tương tự như môi trường on-premises, chúng tôi kéo tệp từ S3 bucket và sao chép tệp vào thư mục /mnt/data trên server. Sau đó truy cập MySQL Pod và khôi phục bằng lệnh:\nmysql -u root -p phonebook \u0026lt; database_ phonebook.sql Sau khi quá trình restore hoàn tất, chúng ta kiểm tra lại dữ liệu trên môi trường Cloud:\nChúng ta đã thấy rằng dữ liệu đã được restore thành công.\nVậy là chúng ta đã di chuyển thành công service được triển khai bằng Kubernetes từ môi trường on-premises lên môi trường Cloud.\n"
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.1-setup-tools/3.1.3-instance-connect/",
+	"title": "Setup Instance Connect để truy cập vào Bastion host thông qua giao thức ssh",
+	"tags": [],
+	"description": "",
+	"content": "Kết nối Amazon EC2 instance là một cách đơn giản và an toàn để kết nối với các instance bằng Secure Shell (SSH). Với EC2 Instance Connect, ta có thể kiểm soát quyền truy cập SSH vào instance của mình bằng policy AWS Identity and Access Management (IAM) cũng như kiểm tra các yêu cầu kết nối bằng event AWS CloudTrail.\nĐể AWS Instance Connect có thể truy cập Bastion Host, Bastion Host phải được đặt trên public subnet và security group phải mở Inbound cho dải IP: https://ip-ranges.amazonaws.com/ ip-ranges.json Để kết nối với instance bằng browser-based client từ bảng điều khiển Amazon EC2:\nStep 1: Chọn instance và chọn Connect. Step 2: Click vào Connect: Chúng ta đã truy cập thành công Bastion Host bằng cách sử dụng AWS EC2 Instance Connect: Từ đây chúng ta sẽ bắt đầu cài đặt các công cụ cần thiết cho bastion host\n"
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.2-terraform/3.2.3-nat/",
+	"title": "Tạo AWS NAT Gateway bằng cách sử dụng Terraform",
+	"tags": [],
+	"description": "",
+	"content": "NAT Gateway được sử dụng trong các private subnet để cho phép service kết nối với internet. Đối với NAT, trước tiên cần allocate public IP address first.\nresource \u0026quot;aws_eip\u0026quot; \u0026quot;eip-vpc-main\u0026quot; {\rvpc = true\rtags = {\rName = \u0026quot;eip-vpc-main\u0026quot;\r}\r}\rresource \u0026quot;aws_nat_gateway\u0026quot; \u0026quot;nat-gateway-vpc-main\u0026quot; {\rallocation_id = aws_eip.eip-vpc-main.id\rsubnet_id = aws_subnet.public-subnet-vpc-main-1.id\rconnectivity_type = \u0026quot;public\u0026quot;\rtags = {\rName = \u0026quot;nat-gateway-vpc-main\u0026quot;\r}\r# Internet Gateway must be created before aws_nat_gateway\rdepends_on = [aws_internet_gateway.internet-gateway-vpc-main]\r}\r"
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.3-k8s-app/",
+	"title": "Triển khai kiến trúc ứng dụng Phonebook sử dụng nền tảng Kubernetes trên cụm AWS EKS trên AWS Cloud",
+	"tags": [],
+	"description": "",
+	"content": "Content: AWS ALB Ingress Controller Tạo file ALB Ingress manifest Module web server Module result server Module MySQL database "
+},
+{
+	"uri": "//localhost:1313/vi/4-backup-restore/",
+	"title": "Backup &amp; restore dữ liệu ứng dụng từ môi trường on-premises lên AWS cloud",
+	"tags": [],
+	"description": "",
+	"content": "Tùy vào dữ liệu của ứng dụng lớn hay nhỏ và yêu cầu thời gian upload dữ liệu ngắn hay dài mà chúng ta sẽ lựa chọn các kịch bản sao lưu \u0026amp; khôi phục khác nhau.\nVới ứng dụng này, chúng ta sẽ sử dụng mysqldump để sao lưu cơ sở dữ liệu App-phonebook trên môi trường On-premises, sau đó đẩy nó lên S3 bucket để server trên môi trường AWS Cloud có thể kéo về. Cuối cùng khôi phục trên cơ sở dữ liệu mysql đã triển khai trên AWS Cloud\nContent: Backup mysql database trên môi trường on-premises Push mysql backup file từ on-premises lên AWS cloud sử dụng awscli Restore dữ liệu mysql trên môi trường AWS cloud "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.1-setup-tools/3.1.4-awscli/",
+	"title": "Cài đặt awscli tool",
+	"tags": [],
+	"description": "",
+	"content": "Step 1: Cập nhật chỉ mục gói cục bộ và cung cấp cho hệ thống thông tin mới nhất về các gói có sẵn từ repo\nsudo apt update -y Step 2: Download awscli binary file\ncurl \u0026quot;https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\u0026quot; -o \u0026quot;awscliv2.zip\u0026quot;\rStep 3: unzip sau đó install\nunzip awscliv2.zip\rsudo ./aws/install\rStep 4: Cấu hình cho AWS CLI\naws configure\raws_access_key_id = xxx\raws_secret_access_key = xxx\rregion = xxx\routput = xxx\r"
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.2-terraform/3.2.4-routetable/",
+	"title": "Tạo AWS Route Table bằng cách sử dụng Terraform",
+	"tags": [],
+	"description": "",
+	"content": "A route table chứa một bộ quy tắc, được gọi là các route, xác định nơi lưu lượng truy cập mạng từ subnet or gateway được hướng tới\nRoute Table for Public Subnets\nresource \u0026quot;aws_route_table\u0026quot; \u0026quot;route-table-public-vpc-main\u0026quot; {\rvpc_id = aws_vpc.vpc-main.id\rroute {\rcidr_block = \u0026quot;0.0.0.0/0\u0026quot;\rgateway_id = aws_internet_gateway.internet-gateway-vpc-main.id\r}\rtags = {\rName = \u0026quot;route-table-public-vpc-main\u0026quot;\r}\r}\rresource \u0026quot;aws_route_table_association\u0026quot; \u0026quot;public-subnet-1\u0026quot; {\rsubnet_id = aws_subnet.public-subnet-vpc-main-1.id\rroute_table_id = aws_route_table.route-table-public-vpc-main.id\r}\rresource \u0026quot;aws_route_table_association\u0026quot; \u0026quot;public-subnet-2\u0026quot; {\rsubnet_id = aws_subnet.public-subnet-vpc-main-2.id\rroute_table_id = aws_route_table.route-table-public-vpc-main.id\r}\rRoute Table for Private Subnets\nresource \u0026quot;aws_route_table\u0026quot; \u0026quot;route-table-private-vpc-main\u0026quot; {\rvpc_id = aws_vpc.vpc-main.id\rroute {\rcidr_block = \u0026quot;0.0.0.0/0\u0026quot;\rnat_gateway_id = aws_nat_gateway.nat-gateway-vpc-main.id\r}\rtags = {\rName = \u0026quot;route-table-private-vpc-main\u0026quot;\r}\r}\rresource \u0026quot;aws_route_table_association\u0026quot; \u0026quot;private-subnet-1\u0026quot; {\rsubnet_id = aws_subnet.private-subnet-vpc-main-1.id\rroute_table_id = aws_route_table.route-table-private-vpc-main.id\r}\rresource \u0026quot;aws_route_table_association\u0026quot; \u0026quot;private-subnet-2\u0026quot; {\rsubnet_id = aws_subnet.private-subnet-vpc-main-2.id\rroute_table_id = aws_route_table.route-table-private-vpc-main.id\r} "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.1-setup-tools/3.1.5-eksctl/",
+	"title": "Cài đặt eksctl tool",
+	"tags": [],
+	"description": "",
+	"content": "Step 1: Chỉ định biến môi trường cho ARM systems, set ARCH: arm64, armv6 or armv7\nARCH=amd64\rPLATFORM=$(uname -s)_$ARCH\rStep 2: Download eksctl-install file\ncurl -sLO \u0026quot;https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz\u0026quot;\r(Optional) Verify checksum\rcurl -sL \u0026quot;https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt\u0026quot; | grep $PLATFORM | sha256sum --check\rStep 3: Giải nén sau đó move vào folder bin\ntar -xzf eksctl_$PLATFORM.tar.gz -C /tmp \u0026amp;\u0026amp; rm eksctl_$PLATFORM.tar.gz\rsudo mv /tmp/eksctl /usr/local/bin\r"
+},
+{
+	"uri": "//localhost:1313/vi/5-clear/",
+	"title": "Dọn dẹp tài nguyên",
+	"tags": [],
+	"description": "",
+	"content": "Vì tất cả tài nguyên, ứng dụng Phonebook, dữ liệu ứng dụng đều được triển khai trên môi trường AWS Cloud nên sau khi hoàn thành Workshop này, nếu muốn dọn sạch tài nguyên, chúng ta chỉ cần chạy lệnh: terraform destroy và nhập yes. Khi đó quá trình dọn dẹp tài nguyên sẽ diễn ra tự động:\nQuá trình sẽ tiếp tục cho đến khi tài nguyên do Terraform tạo ra được xóa hoàn toàn\n"
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.2-terraform/3.2.5-eks-cluster/",
+	"title": "Tạo AWS EKS cluster bằng cách sử dụng Terraform",
+	"tags": [],
+	"description": "",
+	"content": "Các cụm Kubernetes do Amazon EKS quản lý thực hiện lệnh gọi API đến các AWS services khác để quản lý tài nguyên mà chúng tôi sử dụng với dịch vụ. Ví dụ: EKS sẽ tạo một Auto scaling cho từng Instance nếu bạn sử dụng các Node Group được quản lý.\nTrước khi tạo Amazon EKS clusters, ta bắt buộc phải tạo IAM role với AmazonEKSClusterPolicy.\nresource \u0026quot;aws_iam_role\u0026quot; \u0026quot;eks-cluster-role\u0026quot; {\rname = \u0026quot;eks-cluster-role\u0026quot;\rassume_role_policy = \u0026lt;\u0026lt;POLICY\r{\r\u0026quot;Version\u0026quot;: \u0026quot;2012-10-17\u0026quot;,\r\u0026quot;Statement\u0026quot;: [\r{\r\u0026quot;Effect\u0026quot;: \u0026quot;Allow\u0026quot;,\r\u0026quot;Principal\u0026quot;: {\r\u0026quot;Service\u0026quot;: \u0026quot;eks.amazonaws.com\u0026quot;\r},\r\u0026quot;Action\u0026quot;: \u0026quot;sts:AssumeRole\u0026quot;\r}\r]\r}\rPOLICY\r}\rresource \u0026quot;aws_iam_role_policy_attachment\u0026quot; \u0026quot;eks-cluster-role-attach-AmazonEKSClusterPolicy\u0026quot; {\rpolicy_arn = \u0026quot;arn:aws:iam::aws:policy/AmazonEKSClusterPolicy\u0026quot;\rrole = aws_iam_role.eks-cluster-role.name\r}\rresource \u0026quot;aws_eks_cluster\u0026quot; \u0026quot;phonebook-eks-cluster\u0026quot; {\rname = \u0026quot;phonebook-eks-cluster\u0026quot;\rrole_arn = aws_iam_role.eks-cluster-role.arn\rvpc_config {\rsubnet_ids = [\raws_subnet.private-subnet-vpc-main-1.id,\raws_subnet.private-subnet-vpc-main-2.id,\raws_subnet.public-subnet-vpc-main-1.id,\raws_subnet.public-subnet-vpc-main-2.id\r]\r}\rtags = {\rApp = \u0026quot;phonebook\u0026quot;\r}\rdepends_on = [aws_iam_role_policy_attachment.eks-cluster-role-attach-AmazonEKSClusterPolicy]\r}\rTiếp theo ta tạo Node Group cho EKS cluster. Tuy nhiên, trước khi tạo Node Group thì chúng ta cần attach các policy cần thiết vào role\nresource \u0026quot;aws_iam_role\u0026quot; \u0026quot;node-group-role\u0026quot; {\rname = \u0026quot;node-group-role\u0026quot;\rassume_role_policy = jsonencode({\rStatement = [{\rAction = \u0026quot;sts:AssumeRole\u0026quot;\rEffect = \u0026quot;Allow\u0026quot;\rPrincipal = {\rService = \u0026quot;ec2.amazonaws.com\u0026quot;\r}\r}]\rVersion = \u0026quot;2012-10-17\u0026quot;\r})\r}\rresource \u0026quot;aws_iam_role_policy_attachment\u0026quot; \u0026quot;node-group-role-attach-AmazonEKSWorkerNodePolicy\u0026quot; {\rpolicy_arn = \u0026quot;arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy\u0026quot;\rrole = aws_iam_role.node-group-role.name\r}\rresource \u0026quot;aws_iam_role_policy_attachment\u0026quot; \u0026quot;node-group-role-attach-AmazonEKS_CNI_Policy\u0026quot; {\rpolicy_arn = \u0026quot;arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy\u0026quot;\rrole = aws_iam_role.node-group-role.name\r}\rresource \u0026quot;aws_iam_role_policy_attachment\u0026quot; \u0026quot;node-group-role-attach-AmazonEC2ContainerRegistryReadOnly\u0026quot; {\rpolicy_arn = \u0026quot;arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly\u0026quot;\rrole = aws_iam_role.node-group-role.name\r}\rresource \u0026quot;aws_iam_role_policy_attachment\u0026quot; \u0026quot;node-group-role-attach-AmazonS3FullAccess\u0026quot; {\rpolicy_arn = \u0026quot;arn:aws:iam::aws:policy/AmazonS3FullAccess\u0026quot;\rrole = aws_iam_role.node-group-role.name\r}\rresource \u0026quot;aws_iam_role_policy_attachment\u0026quot; \u0026quot;node-group-role-attach-AmazonEC2FullAccess\u0026quot; {\rpolicy_arn = \u0026quot;arn:aws:iam::aws:policy/AmazonEC2FullAccess\u0026quot;\rrole = aws_iam_role.node-group-role.name\r}\rTiếp theo chúng ta viết code Terraform để tạo Node Group với: - Tên Node Group là \u0026ldquo;phonebook-nodes\u0026rdquo; nằm trong \u0026ldquo;phonebook-eks-cluster\u0026rdquo; EKS cluster - Network là Private-subnet-vpc-main-1\n- ami là Amazon Linux 2 x86_64, capacity type là on demand, instance type là t2.medium và disk storage là 10Gib - scaling config: desired = 1, max = 1 \u0026amp; min = 1\nresource \u0026quot;aws_eks_node_group\u0026quot; \u0026quot;phonebook-nodes\u0026quot; {\rcluster_name = aws_eks_cluster.phonebook-eks-cluster.name\rnode_group_name = \u0026quot;phonebook-nodes\u0026quot;\rnode_role_arn = aws_iam_role.node-group-role.arn\rsubnet_ids = [\raws_subnet.private-subnet-vpc-main-1.id\r]\r# Node group compute configuration\rami_type = \u0026quot;AL2_x86_64\u0026quot;\rcapacity_type = \u0026quot;ON_DEMAND\u0026quot;\rinstance_types = [\u0026quot;t2.medium\u0026quot;]\rdisk_size = 10\rscaling_config {\rdesired_size = 1\rmax_size = 1\rmin_size = 1\r}\r# Node group update configuration\rupdate_config {\rmax_unavailable = 1\r}\rlabels = {\rapp = \u0026quot;phonebook\u0026quot;\r}\rdepends_on = [\raws_iam_role_policy_attachment.node-group-role-attach-AmazonEKSWorkerNodePolicy,\raws_iam_role_policy_attachment.node-group-role-attach-AmazonEKS_CNI_Policy,\raws_iam_role_policy_attachment.node-group-role-attach-AmazonEC2ContainerRegistryReadOnly,\raws_iam_role_policy_attachment.node-group-role-attach-AmazonS3FullAccess,\raws_iam_role_policy_attachment.node-group-role-attach-AmazonEC2FullAccess\r]\r} "
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.1-setup-tools/3.1.6-kubectl/",
+	"title": "Cài đặt kubectl tool",
+	"tags": [],
+	"description": "",
+	"content": "Step 1: Download binary file\ncurl -LO https://dl.k8s.io/release/v1.28.4/bin/linux/amd64/kubectl\rStep 2: Install kubectl\nsudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl\rStep 3: Lệnh check version của kubectl\nkubectl version --client\r"
+},
+{
+	"uri": "//localhost:1313/vi/3-migrate/3.1-setup-tools/3.1.7-terraform/",
+	"title": "Cài đặt Terraform tool",
+	"tags": [],
+	"description": "",
+	"content": "Refer: https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli\nStep 1: Đảm bảo rằng hệ thống của bạn được cập nhật và bạn đã cài đặt:\ninstalled the gnupg software-properties-common curl packages Bạn sẽ sử dụng các gói này để xác minh chữ ký GPG của HashiCorp và cài đặt kho gói Debian của HashiCorp.\nsudo apt-get update -y \u0026amp;\u0026amp; sudo apt-get install -y gnupg software-properties-common\rStep 2: Cài đặt the HashiCorp GPG key.\nwget -O- https://apt.releases.hashicorp.com/gpg | \\\rgpg --dearmor | \\\rsudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg \u0026gt; /dev/null\rStep 3: Xác minh the key\u0026rsquo;s fingerprint.\ngpg --no-default-keyring \\\r--keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg \\\r--fingerprint\rThe gpg command will report the key fingerprint:\r/usr/share/keyrings/hashicorp-archive-keyring.gpg\r-------------------------------------------------\rpub rsa4096 XXXX-XX-XX [SC]\rAAAA AAAA AAAA AAAA\ruid [ unknown] HashiCorp Security (HashiCorp Package Signing) \u0026lt;security+packaging@hashicorp.com\u0026gt;\rsub rsa4096 XXXX-XX-XX [E]\rStep 4: Add the official HashiCorp repository vào hệ thống\nThe lsb_release -cs command finds the distribution release codename for your current system, such as buster, groovy, or sid.\necho \u0026quot;deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \\\rhttps://apt.releases.hashicorp.com $(lsb_release -cs) main\u0026quot; | \\\rsudo tee /etc/apt/sources.list.d/hashicorp.list\rStep 5: Download the package information from HashiCorp.\nsudo apt update -y\rStep 6: Install Terraform from the new repository.\nsudo apt-get install terraform -y\r*** Verify the installation\nterraform --help\r*** Add any subcommand to terraform -help to learn more about what it does and available options.\nterraform --help plan\r"
+},
+{
+	"uri": "//localhost:1313/vi/categories/",
+	"title": "Categories",
+	"tags": [],
+	"description": "",
+	"content": ""
+},
+{
+	"uri": "//localhost:1313/vi/tags/",
+	"title": "Tags",
+	"tags": [],
+	"description": "",
+	"content": ""
+}]
