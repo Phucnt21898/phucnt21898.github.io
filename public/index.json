@@ -8,7 +8,7 @@
 },
 {
 	"uri": "//localhost:1313/4-backup-restore/4.1-backup/",
-	"title": "Backup mysql database trên môi trường On-premsise",
+	"title": "Backup mysql database on on-premises enviroment",
 	"tags": [],
 	"description": "",
 	"content": "Run command to access to MySQL Pod:\nkubectcl exec –it \u0026lt;mysql_pod\u0026gt; bash –n phonebook\rRun command to backup:\nmysqldump -u root -p phonebook \u0026gt; /var/lib/mysql/database_phonebook.sql\rBecause the /var/lib/mysql folder in the mysql container is mounted with the /mnt/data folder on the host, so we can see the database_phonebook.sql file in the /mnt/data folder on the host.\n"
