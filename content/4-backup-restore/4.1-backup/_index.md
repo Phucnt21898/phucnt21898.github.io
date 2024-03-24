@@ -1,5 +1,5 @@
 ---
-title : "Backup mysql database trên môi trường On-premsise"
+title : "Backup mysql database on on-premises enviroment"
 date : "`r Sys.Date()`"
 weight : 1
 chapter : false
